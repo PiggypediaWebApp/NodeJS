@@ -15,12 +15,13 @@ router.post('/', function(req, res) {
 	var http = require('request');
 	var tempString = '';
 
+	http({
+    		url: 'http://52.77.244.73:50070/webhdfs/v1/user/webapp1/input.txt?op=APPEND',
+    		method: 'POST',
+    		body: req.body.message
+	});
 
-	child = exec("ls", function(error, stdout, stderr) {
-		sys.print('stdout: ' + stdout);
-		tempString = stdout;
-		res.json({ "message" : req.body.message, "child" : tempString});
-		sys.print('stderr: ' + stderr);
+	child = exec("pig ~/pig/search.pig", function(error, stdout, stderr) {
 		if ( error !== null ) {
 			sys.print(error);
 		}
@@ -28,7 +29,11 @@ router.post('/', function(req, res) {
 
 	res.header('Access-Control-Allow-Origin', '*');
 	res.header('Access-Control-Allow-Headers', 'Content-Type');
-	res.header('Access-Control-Allow-Methids', 'POST');	
+	res.header('Access-Control-Allow-Methods', 'POST');	
+
+	http("http://52.77.244.73:50070/webhdfs/v1/user/webapp1/output/my_search_pig_out?op=OPEN", function(error, response, body) {
+  		res.json(body);
+	});
 });
  
 app.use('/api', router);
